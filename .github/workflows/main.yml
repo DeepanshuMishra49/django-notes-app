@@ -1,0 +1,35 @@
+name: docker-github actions
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+
+    steps:
+      - name: code-clone
+        uses: actions/checkout@v3
+
+      - name: set-up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin      
+
+      - name: docker-image-build
+        run: |
+            docker build -t deep270804/django-notes-app-github . 
+
+      - name: docker-image-push
+        run: |
+            docker push deep270804/django-notes-app-github:latest 
+
+      - name: docker-run
+        run: |
+            docker compose up -d       
